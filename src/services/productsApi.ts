@@ -19,6 +19,23 @@ export interface Product {
 let memoryCache: { data: Product[]; timestamp: number } | null = null;
 let inFlightRequest: Promise<Product[]> | null = null;
 
+function parseFeaturedValue(value: unknown): boolean {
+  if (typeof value === "boolean") {
+    return value;
+  }
+
+  if (typeof value === "number") {
+    return value === 1;
+  }
+
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    return ["yes", "true", "1", "y"].includes(normalized);
+  }
+
+  return false;
+}
+
 function isCacheFresh(timestamp: number): boolean {
   return Date.now() - timestamp < PRODUCTS_CACHE_TTL_MS;
 }
@@ -58,7 +75,9 @@ function writeStorageCache(cache: { data: Product[]; timestamp: number }) {
 }
 
 async function requestProductsFromApi(): Promise<Product[]> {
-  const res = await fetch(`${PRODUCTS_API_URL}?action=getProducts`);
+  const res = await fetch(`${PRODUCTS_API_URL}?action=getProducts`, {
+    cache: "no-store",
+  });
   const data = await res.json();
 
   if (!data?.success) {
@@ -76,7 +95,9 @@ async function requestProductsFromApi(): Promise<Product[]> {
       price: Number(p.price_inr || 0),
       image: images[0] || FALLBACK_PRODUCT_IMAGE,
       images,
-      isFeatured: p.featured === "Yes",
+      isFeatured: parseFeaturedValue(
+        p.featured ?? p.is_featured ?? p.isFeatured ?? p.Featured
+      ),
     };
   });
 }

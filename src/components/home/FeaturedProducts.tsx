@@ -12,7 +12,7 @@ const FeaturedProducts = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const data = await fetchProducts();
+        const data = await fetchProducts({ forceRefresh: true });
         const featured = data.filter((p) => p.isFeatured).slice(0, 3);
         setProducts(featured);
       } catch (error) {
