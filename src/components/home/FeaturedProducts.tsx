@@ -13,7 +13,7 @@ const FeaturedProducts = () => {
     const load = async () => {
       try {
         const data = await fetchProducts({ forceRefresh: true });
-        const featured = data.filter((p) => p.isFeatured).slice(0, 3);
+        const featured = data.filter((p) => p.isFeatured);
         setProducts(featured);
       } catch (error) {
         console.error("Failed to load featured products:", error);
